@@ -6,8 +6,6 @@
     //global chart options
     var options;
 
-    //parsing mm-dd-yyyy hh:mm:ss on 24hr clock
-
     //create trace volume chart   
     function intraday_corp_hg_euro_chart() {
        
@@ -29,36 +27,38 @@
                          load: function getNewData() {
                                 // set up the updating of the chart each minutes
                                 $.get('../../datafiles/widget_data/TRAX_Corp-IG_EUR.csv', function (values) {
-                                        var lines = values.split('\n');
-                                        //if first call find the most recent line in csv
-                                        if (current_line === 0){
-                                            current_line = chart_1.series[0].data.length + 1; 
-                                        }
-                                        //make sure the line is defined
-                                        //and the chart is not being reset
-                                        if (lines[current_line] != undefined && chart_1.series != undefined){
-                                            var line = lines[current_line];
-                                            var info = line.split(',');
-                                            var date = info[0].trim().split(/[./-\s:]/);
-                                            //make sure we havent over stepped
-                                            if (info[1] != undefined && info[1].trim() != 'NA'){
-                                                if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
-                                                    var x;
-                                                    //check date format
-                                                    if (date[0].length < 4){
-                                                        //mm/dd/YYYY
-                                                        x = Date.UTC(date[2], date[0] - 1, date[1], date[3], date[4]);
+                                        if (chart != undefined && chart.series != undefined){
+                                            var lines = values.split('\n');
+                                            //if first call find the most recent line in csv
+                                            if (current_line === 0){
+                                                current_line = chart_1.series[0].data.length + 1; 
+                                            }
+                                            //make sure the line is defined
+                                            //and the chart is not being reset
+                                            if (lines[current_line] != undefined){
+                                                var line = lines[current_line];
+                                                var info = line.split(',');
+                                                var date = info[0].trim().split(/[./-\s:]/);
+                                                //make sure we havent over stepped
+                                                if (info[1] != undefined && info[1].trim() != 'NA'){
+                                                    if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
+                                                        var x;
+                                                        //check date format
+                                                        if (date[0].length < 4){
+                                                            //mm/dd/YYYY
+                                                            x = Date.UTC(date[2], date[0] - 1, date[1], date[3], date[4]);
+                                                        }
+                                                        //YYYY/mm/dd
+                                                        else {
+                                                            x = Date.UTC(date[0], date[1] - 1, date[2], date[3], date[4]);
+                                                        }
+                                                        var y = parseInt(info[1])/1000000000;
+                                                        //add point
+                                                        chart_1.series[0].addPoint([x,y]);
+                                                        //increment call number
+                                                        current_line++;
                                                     }
-                                                    //YYYY/mm/dd
-                                                    else {
-                                                        x = Date.UTC(date[0], date[1] - 1, date[2], date[3], date[4]);
-                                                    }
-                                                    var y = parseInt(info[1])/1000000000;
-                                                    //add point
-                                                    chart_1.series[0].addPoint([x,y]);
-                                                    //increment call number
-                                                    current_line++;
-                                                }
+                                            }
                                         }
                                     }
                                 });
