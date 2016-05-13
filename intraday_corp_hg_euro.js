@@ -1,0 +1,259 @@
+
+(function () {
+
+    //global chart variabls
+    var chart;
+    //global chart options
+    var options;
+
+    //parsing mm-dd-yyyy hh:mm:ss on 24hr clock
+
+    //create trace volume chart   
+    function intraday_corp_hg_euro_chart() {
+       
+        //increments current_line when instantiating chart so start at 6:59
+        var current_line = 0;
+
+        var jqxhr_trax_intraday = $.get('../../datafiles/widget_data/TRAX_Corp-IG_EUR.csv', function (data) {
+
+            //set up chart 
+            options = {
+                //set chart type
+                chart: {
+                    type: 'spline',
+                    defaultSeriesType: 'spline',
+                    renderTo: 'intraday_corp_hg_euro_container',
+                    marginRight: 10,
+                    alignTicks: false,
+                    events: {
+                         load: function getNewData() {
+                                // set up the updating of the chart each minutes
+                                $.get('../../datafiles/widget_data/TRAX_Corp-IG_EUR.csv', function (values) {
+                                        var lines = values.split('\n');
+                                        //if first call find the most recent line in csv
+                                        if (current_line === 0){
+                                            current_line = chart_1.series[0].data.length + 1; 
+                                        }
+                                        //make sure the line is defined
+                                        //and the chart is not being reset
+                                        if (lines[current_line] != undefined && chart_1.series != undefined){
+                                            var line = lines[current_line];
+                                            var info = line.split(',');
+                                            var date = info[0].trim().split(/[./-\s:]/);
+                                            //make sure we havent over stepped
+                                            if (info[1] != undefined && info[1].trim() != 'NA'){
+                                                if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
+                                                    var x;
+                                                    //check date format
+                                                    if (date[0].length < 4){
+                                                        //mm/dd/YYYY
+                                                        x = Date.UTC(date[2], date[0] - 1, date[1], date[3], date[4]);
+                                                    }
+                                                    //YYYY/mm/dd
+                                                    else {
+                                                        x = Date.UTC(date[0], date[1] - 1, date[2], date[3], date[4]);
+                                                    }
+                                                    var y = parseInt(info[1])/1000000000;
+                                                    //add point
+                                                    chart_1.series[0].addPoint([x,y]);
+                                                    //increment call number
+                                                    current_line++;
+                                                }
+                                        }
+                                    }
+                                });
+                                //call every minute
+                                setTimeout(getNewData, 60*1000);
+                        }
+                    }
+                },
+
+                //set title 
+                title: {
+                    text: 'Active High Grade Eurobonds',
+                    style: {
+                        color: '#4D759E'
+                    },
+                    align: 'center'
+                },
+                //set x-axis 
+                xAxis: [{
+                    title: {
+                        text: 'Time',
+                        style: {
+                            color: '#4D759E',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    gridLineWidth: .5,
+                    type: 'datetime',
+                    tickInterval: (1000*60*30),
+                    labels: {
+                        align: 'right',
+                    },
+                    dateTimeLabelFormats: {
+                        hour: '%l',
+                        minute: '%l:%M'
+                    },
+                    //make only first and last times have am/pm
+                    formatter: function(){
+                            if (this.isFirst){
+                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " AM";
+                            }
+                            else if (this.isLast){
+                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " PM";
+                            }
+                            else
+                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value);
+                        }
+                    }
+                }],
+                //set y-axis 
+                yAxis: {
+                    title: {
+                        text: 'Total Daily Flow ( Billions EUR )',
+                        style: {
+                            color: '#4D759E',
+                            fontWeight: 'bold'
+                        },
+                        margin: 80
+                    },
+                    labels: {
+                        format: '{value: f}'
+                    },
+                    minPadding: 0.2,
+                    maxPadding: 0.2
+                },
+                //set tooltip formatting      
+                tooltip: {
+                    valuePrefix: '€',
+                    valueSuffix: ' Billion',
+                    valueDecimals: 2,
+                    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                    dateTimeLabelFormats: {
+                        minute: '%A, %b %e, %Y %l:%M %p'
+                    }
+                },
+                //set legend
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    borderWidth: 1,
+                    borderRadius: 5
+                },
+                //instantiate series
+                series: [{
+                    data: []
+                }],
+                //set colors for series                             
+                colors: ['#002244', '#DBBB33', '#639741', '#a65300', '#43C5F3'],
+                
+                //set general plot options
+                plotOptions: {
+                    column: {
+                        pointPadding: 0,
+                        borderWidth: 0,
+                        //have colums next to each other rather than stack
+                        stacking: undefined
+                    },
+                    line: {
+                        //make data label markers always a circle
+                        marker: {
+                            symbol: 'circle'
+                        }
+                    },
+                    //set max data in series to 5000 
+                    series: {
+                        turboThreshold: 5000
+                    }
+                },
+                //set name of chart downloads
+                exporting: {
+                    filename: 'MarketAxess_trax_intraday_corp_hg_euro',
+                    //enable download icon
+                    enabled: false,
+                    //add image to download 
+                    chartOptions: {
+                        chart: {
+                            events: {
+                                load: function () {
+                                    this.renderer.image('http://www.marketaxess.com/images/marketaxess_logo2.gif', 90, 75, 300, 48).attr({
+                                        opacity: 0.1
+                                        }).add();
+                                }
+                            }
+                        }
+                    }
+                },
+                //disable credits
+                credits: {
+                    enabled: false
+                }
+            };
+
+            //names of labels in order of series
+            var names = ['Today', 'Yesterday', 'Average (Last 20 Days)', 'Highest (Last 20 Days)', 'Lowest (Last 20 Days)'];            //get csv file divide by 1 (no change to data) and populate chart
+                
+
+            //make the today line abover the rest
+            for (var i = 0; i < options.series.length; i++){
+                options.series[i].zIndex = options.series.length - i - 1;
+            }
+
+            //read csv file
+            readTimeCSV(options, data, 1000000000, names);
+
+            //create chart
+            chart = new Highcharts.Chart(options);
+
+            })
+                //catch error and display them
+                .fail(function (jqxhr_trax_intraday, exception) {
+                    ajaxError(jqxhr_trax_intraday, exception, '#intraday_corp_hg_euro_container');
+            });
+    }
+
+
+    //set high level chart options for all charts
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: ','
+        }
+    });
+
+    //create chart
+    intraday_corp_hg_euro_chart();
+
+    //set chart to reset everyday at 7am London Time 
+    function dailyReset(){
+        var delay;
+        //transfrom current time to london tome
+        var now = moment().tz("Europe/London");
+
+        //if its time to reset
+        if (now.hours() == 7 && now.minutes() == 0){
+            $('#intraday_corp_hg_euro_container').highcharts().destroy();
+            intraday_corp_hg_euro_chart();
+            delay = 24*60*60*1000; //one day in milliseconds
+        }
+        else {
+            //create moment date object as 7am in London Time
+            var nextReset = moment().tz("Europe/London"); 
+            nextReset.hours(7);
+            nextReset.minute(0);
+            nextReset.milliseconds(0);
+            //find the difference and set as delay
+            var delay = nextReset.diff(now);
+            //if the next reset is the follow day set delay as such
+            if (delay < 0){
+                delay += 24*60*60*1000; //one day in milliseconds
+            }
+        }
+        setTimeout(dailyReset,delay);
+    };
+
+    dailyReset();
+
+})();
+
+
