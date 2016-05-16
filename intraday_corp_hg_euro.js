@@ -31,7 +31,7 @@
                                             var lines = values.split('\n');
                                             //if first call find the most recent line in csv
                                             if (current_line === 0){
-                                                current_line = chart_1.series[0].data.length + 1; 
+                                                current_line = chart.series[0].data.length + 1; 
                                             }
                                             //make sure the line is defined
                                             //and the chart is not being reset
@@ -54,7 +54,7 @@
                                                         }
                                                         var y = parseInt(info[1])/1000000000;
                                                         //add point
-                                                        chart_1.series[0].addPoint([x,y]);
+                                                        chart.series[0].addPoint([x,y]);
                                                         //increment call number
                                                         current_line++;
                                                     }
@@ -95,19 +95,19 @@
                         hour: '%l',
                         minute: '%l:%M'
                     },
-                    //make only first and last times have am/pm
-                    formatter: function(){
-                            if (this.isFirst){
-                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " AM";
+                    labels: {
+                            formatter: function(){
+                                if (this.isFirst){
+                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " AM";
+                                }
+                                else if (this.isLast){
+                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " PM";
+                                }
+                                else
+                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value);
                             }
-                            else if (this.isLast){
-                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " PM";
-                            }
-                            else
-                                return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value);
                         }
-                    }
-                }],
+                    }],
                 //set y-axis 
                 yAxis: {
                     title: {
@@ -122,7 +122,8 @@
                         format: '{value: f}'
                     },
                     minPadding: 0.2,
-                    maxPadding: 0.2
+                    maxPadding: 0.2,
+                    min: 0
                 },
                 //set tooltip formatting      
                 tooltip: {
@@ -192,16 +193,15 @@
             };
 
             //names of labels in order of series
-            var names = ['Today', 'Yesterday', 'Average (Last 20 Days)', 'Highest (Last 20 Days)', 'Lowest (Last 20 Days)'];            //get csv file divide by 1 (no change to data) and populate chart
-                
+            var names = ['Today', 'Yesterday', 'Average (Last 20 Days)', 'Highest (Last 20 Days)', 'Lowest (Last 20 Days)'];
+
+            //get csv file divide by 1 billion and populate chart
+            readTimeCSV(options, data, 1000000000, names);
 
             //make the today line abover the rest
             for (var i = 0; i < options.series.length; i++){
                 options.series[i].zIndex = options.series.length - i - 1;
             }
-
-            //read csv file
-            readTimeCSV(options, data, 1000000000, names);
 
             //create chart
             chart = new Highcharts.Chart(options);
