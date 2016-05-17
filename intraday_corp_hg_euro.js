@@ -40,8 +40,9 @@
                                                 var info = line.split(',');
                                                 var date = info[0].trim().split(/[./-\s:]/);
                                                 //make sure we havent over stepped
-                                                if (info[1] != undefined && info[1].trim() != 'NA'){
-                                                    if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
+                                                if (info[1] != undefined && info[1].trim() != 'NA'){ 
+                                                    //if between 7am and 5pm
+                                                    if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0) ){
                                                         var x;
                                                         //check date format
                                                         if (date[0].length < 4){
@@ -62,8 +63,11 @@
                                         }
                                     }
                                 });
-                                //call every minute
-                                setTimeout(getNewData, 60*1000);
+                                //call 3 seconds past every minute so csv file has time to update
+                                var now = new Date();
+                                var nextMin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 3, 0);
+                                var delay = nextMin - now;
+                                setTimeout(getNewData, delay);
                         }
                     }
                 },
