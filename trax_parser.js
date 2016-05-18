@@ -71,7 +71,7 @@ function readTimeCSV(options, data, scale, names) {
                         }
                         //mm/dd/YYYY HH:mm:ss
                         else if (utcFormat === 3){
-                            if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
+                            if ( (date[3] >= 8 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
                                 options.series[itemNo - 1].data.push({  x: Date.UTC(date[2], date[0] - 1, date[1], date[3], date[4]), 
                                                                         y: (parseFloat(item) / scale)
                                                                         });
@@ -79,7 +79,7 @@ function readTimeCSV(options, data, scale, names) {
                         }
                         //YYYY-mm-dd HH:mm:ss
                         else if (utcFormat === 4){
-                            if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
+                            if ( (date[3] >= 8 && date[3] <= 16) || (date[3] == 17 && date[4] == 0)){
                                 options.series[itemNo - 1].data.push({  x: Date.UTC(date[0], date[1] - 1, date[2], date[3], date[4]), 
                                                                         y: (parseFloat(item) / scale)
                                                                         });

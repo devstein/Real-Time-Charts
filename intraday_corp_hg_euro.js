@@ -41,8 +41,8 @@
                                                 var date = info[0].trim().split(/[./-\s:]/);
                                                 //make sure we havent over stepped
                                                 if (info[1] != undefined && info[1].trim() != 'NA'){ 
-                                                    //if between 7am and 5pm
-                                                    if ( (date[3] >= 7 && date[3] <= 16) || (date[3] == 17 && date[4] == 0) ){
+                                                    //if between 8am and 5pm
+                                                    if ( (date[3] >= 8 && date[3] <= 16) || (date[3] == 17 && date[4] == 0) ){
                                                         var x;
                                                         //check date format
                                                         if (date[0].length < 4){
@@ -63,9 +63,9 @@
                                         }
                                     }
                                 });
-                                //call 3 seconds past every minute so csv file has time to update
+                                //call 5 seconds past every minute so csv file has time to update
                                 var now = new Date();
-                                var nextMin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 3, 0);
+                                var nextMin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 5, 0);
                                 var delay = nextMin - now;
                                 setTimeout(getNewData, delay);
                         }
@@ -197,7 +197,7 @@
             };
 
             //names of labels in order of series
-            var names = ['Today', 'Yesterday', 'Average (Last 20 Days)', 'Highest (Last 20 Days)', 'Lowest (Last 20 Days)'];
+            var names = ['Today', 'Yesterday', 'Average (Last 30 Days)', 'Highest (Last 30 Days)', 'Lowest (Last 30 Days)'];            
 
             //get csv file divide by 1 billion and populate chart
             readTimeCSV(options, data, 1000000000, names);
@@ -206,6 +206,18 @@
             for (var i = 0; i < options.series.length; i++){
                 options.series[i].zIndex = options.series.length - i - 1;
             }
+
+            //add dates to today and yesterday labels 
+            var curDate = new Date(options.series[1].data[0].x);
+            var today = curDate.toString().split(" ").splice(0,3);
+            options.series[0].name = options.series[0].name + " (" + today[1] + " " + today[2] + ")";
+
+            var yesterday = new Date(curDate.getTime() - (1000 * 60 * 60 * 24));
+            var dayBefore = yesterday.toString().split(" ").splice(1,2);
+            options.series[1].name = options.series[1].name + " (" + dayBefore[0] + " " + dayBefore[1] + ")";
+
+            //make yesterday line dashed
+            options.series[1].dashStyle = 'Dash';
 
             //create chart
             chart = new Highcharts.Chart(options);
