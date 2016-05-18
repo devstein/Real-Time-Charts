@@ -209,8 +209,8 @@
 
             //add dates to today and yesterday labels 
             var curDate = new Date(options.series[1].data[0].x);
-            var today = curDate.toString().split(" ").splice(0,3);
-            options.series[0].name = options.series[0].name + " (" + today[1] + " " + today[2] + ")";
+            var today = curDate.toString().split(" ").splice(1,2);
+            options.series[0].name = options.series[0].name + " (" + today[0] + " " + today[1] + ")";
 
             var yesterday = new Date(curDate.getTime() - (1000 * 60 * 60 * 24));
             var dayBefore = yesterday.toString().split(" ").splice(1,2);
