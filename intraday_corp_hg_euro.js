@@ -240,22 +240,22 @@
     //create chart
     intraday_corp_hg_euro_chart();
 
-    //set chart to reset everyday at 7am London Time 
+    //set chart to reset everyday at 8am London Time 
     function dailyReset(){
         var delay;
         //transfrom current time to london tome
         var now = moment().tz("Europe/London");
 
         //if its time to reset
-        if (now.hours() == 7 && now.minutes() == 0){
+        if (now.hours() == 8 && now.minutes() == 0){
             $('#intraday_corp_hg_euro_container').highcharts().destroy();
             intraday_corp_hg_euro_chart();
             delay = 24*60*60*1000; //one day in milliseconds
         }
         else {
-            //create moment date object as 7am in London Time
+            //create moment date object as 8am in London Time
             var nextReset = moment().tz("Europe/London"); 
-            nextReset.hours(7);
+            nextReset.hours(8);
             nextReset.minute(0);
             nextReset.milliseconds(0);
             //find the difference and set as delay
