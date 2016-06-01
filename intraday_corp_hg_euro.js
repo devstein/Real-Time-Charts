@@ -6,11 +6,20 @@
     //global chart options
     var options;
 
+    //images for pause and start button
+    var imgPaused = 'pause_icon.png';
+    var imgStart = 'start_icon.png';
+    //icon currently displayed
+    var imgState = 'pause_icon.png';
+
     //create trace volume chart   
     function intraday_corp_hg_euro_chart() {
        
         //increments current_line when instantiating chart so start at 6:59
         var current_line = 0;
+
+        //is chart paused
+        var isPaused = false;
 
         var jqxhr_trax_intraday = $.get('../../datafiles/widget_data/TRAX_Corp-IG_EUR.csv', function (data) {
 
@@ -25,6 +34,7 @@
                     alignTicks: false,
                     events: {
                          load: function getNewData() {
+                            if (!isPaused){
                                 // set up the updating of the chart each minutes
                                 $.get('../../datafiles/widget_data/TRAX_Corp-IG_EUR.csv', function (values) {
                                         if (chart != undefined && chart.series != undefined){
@@ -41,8 +51,8 @@
                                                 var date = info[0].trim().split(/[./-\s:]/);
                                                 //make sure we havent over stepped
                                                 if (info[1] != undefined && info[1].trim() != 'NA'){ 
-                                                    //if between 8am and 5pm
-                                                    if ( (date[3] >= 8 && date[3] <= 16) || (date[3] == 17 && date[4] == 0) ){
+                                                    //if between 7am and 9pm
+                                                    if ( (date[3] >= 7 && date[3] <= 20) || (date[3] == 21 && date[4] == 0) ){
                                                         var x;
                                                         //check date format
                                                         if (date[0].length < 4){
@@ -68,6 +78,7 @@
                                 var nextMin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 5, 0);
                                 var delay = nextMin - now;
                                 setTimeout(getNewData, delay);
+                            }
                         }
                     }
                 },
@@ -83,7 +94,7 @@
                 //set x-axis 
                 xAxis: [{
                     title: {
-                        text: 'Time',
+                        text: 'London Time',
                         style: {
                             color: '#4D759E',
                             fontWeight: 'bold'
@@ -91,26 +102,15 @@
                     },
                     gridLineWidth: .5,
                     type: 'datetime',
-                    tickInterval: (1000*60*30),
+                    tickInterval: (1000*60*60),
                     labels: {
+                        rotation: -60,
                         align: 'right',
                     },
                     dateTimeLabelFormats: {
-                        hour: '%l',
-                        minute: '%l:%M'
+                        hour: '%k:%M',
+                        minute: '%k:%M'
                     },
-                    labels: {
-                            formatter: function(){
-                                if (this.isFirst){
-                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " AM";
-                                }
-                                else if (this.isLast){
-                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value) + " PM";
-                                }
-                                else
-                                    return Highcharts.dateFormat(this.dateTimeLabelFormat, this.value);
-                            }
-                        }
                     }],
                 //set y-axis 
                 yAxis: {
@@ -137,7 +137,8 @@
                     pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
                     dateTimeLabelFormats: {
                         minute: '%A, %b %e, %Y %l:%M %p'
-                    }
+                    },
+                    shared: true
                 },
                 //set legend
                 legend: {
@@ -155,28 +156,20 @@
                 
                 //set general plot options
                 plotOptions: {
-                    column: {
-                        pointPadding: 0,
-                        borderWidth: 0,
-                        //have colums next to each other rather than stack
-                        stacking: undefined
-                    },
-                    line: {
-                        //make data label markers always a circle
-                        marker: {
-                            symbol: 'circle'
-                        }
-                    },
                     //set max data in series to 5000 
                     series: {
-                        turboThreshold: 5000
+                        turboThreshold: 5000,
+                        marker: {
+                            symbol: 'circle',
+                            enabled: false
+                        }
                     }
                 },
                 //set name of chart downloads
                 exporting: {
                     filename: 'MarketAxess_trax_intraday_corp_hg_euro',
-                    //enable download icon
-                    enabled: false,
+                    //enable icons
+                    enabled: true,
                     //add image to download 
                     chartOptions: {
                         chart: {
@@ -186,6 +179,30 @@
                                         opacity: 0.1
                                         }).add();
                                 }
+                            }
+                        }
+                    },
+                    buttons: {
+                        contextButton: {
+                            //disable download button
+                            enabled: false
+                        },
+                        toggle: {
+                            symbol: 'url(' + imgState + ')',
+                            symbolY: 11 ,
+                            onclick: function () {
+                                var button = this.exportSVGElements[1].element;
+                                if (isPaused){
+                                    //then restart chart 
+                                    imgState = imgPaused;
+                                    intraday_corp_hg_euro_chart();
+                                }
+                                else{
+                                    //pause chart
+                                    imgState = imgStart;
+                                    isPaused = true;
+                                }
+                                button.attributes[1].value = imgState;
                             }
                         }
                     }
@@ -219,6 +236,17 @@
             //make yesterday line dashed
             options.series[1].dashStyle = 'Dash';
 
+            //add date to highest and lowest labels
+            var topLine = data.split('\n')[0].split(',');
+            var highest = topLine[4].split('_')[3].split('-');
+            var lowest = topLine[5].split('_')[3].split('-');
+            var highestDate = new Date(highest[0], highest[1], highest[2]);
+            var lowestDate = new Date(lowest[0], lowest[1], lowest[2]);
+            var highLabel = highestDate.toString().split(" ").splice(1,2);
+            var lowLabel = lowestDate.toString().split(" ").splice(1,2);
+            options.series[3].name = options.series[3].name + " " + highLabel[0] + " " + highLabel[1];
+            options.series[4].name = options.series[4].name + " " + lowLabel[0] + " " + lowLabel[1];
+           
             //create chart
             chart = new Highcharts.Chart(options);
 
