@@ -136,7 +136,7 @@
                     valueDecimals: 2,
                     pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
                     dateTimeLabelFormats: {
-                        minute: '%A, %b %e, %Y %l:%M %p'
+                        minute: '%A, %b %e, %Y %k:%M'
                     },
                     shared: true
                 },
@@ -189,7 +189,8 @@
                         },
                         toggle: {
                             symbol: 'url(' + imgState + ')',
-                            symbolY: 11 ,
+                            symbolY: 11,
+                            _titleKey: 'buttonTitle',
                             onclick: function () {
                                 var button = this.exportSVGElements[1].element;
                                 if (isPaused){
@@ -261,7 +262,8 @@
     //set high level chart options for all charts
     Highcharts.setOptions({
         lang: {
-            thousandsSep: ','
+            thousandsSep: ',',
+            buttonTitle: 'Pause/Start' //hover title of pause start button
         }
     });
 
@@ -286,7 +288,7 @@
         var nextReset = moment().tz("Europe/London"); 
 
         //15 seconds delay to give new csv time to populate
-        nextReset.hours(8);            
+        nextReset.hours(7);            
         nextReset.minute(0);
         nextReset.seconds(15);
         nextReset.milliseconds(0);
