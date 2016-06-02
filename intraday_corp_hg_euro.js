@@ -241,6 +241,10 @@
             var topLine = data.split('\n')[0].split(',');
             var highest = topLine[4].split('_')[3].split('-');
             var lowest = topLine[5].split('_')[3].split('-');
+            //check if it got quotation mark
+            if (highest[2].length > 2) highest[2] = highest[2].substring(0,2);
+            if (lowest[2].length > 2) lowest[2] = lowest[2].substring(0,2);
+            
             var highestDate = new Date(highest[0], highest[1], highest[2]);
             var lowestDate = new Date(lowest[0], lowest[1], lowest[2]);
             var highLabel = highestDate.toString().split(" ").splice(1,2);
